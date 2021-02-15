@@ -9,16 +9,21 @@ public class Match3 : MonoBehaviour
     [Header("UI Elements")]
     public Sprite[] pieces;
     public RectTransform gameBoard;
+    public RectTransform killedBoard;
 
     [Header("Prefabs")]
     public GameObject nodePiece;
+    public GameObject killedPiece;
 
     int width = 8;
     int height = 8;
+    int[] fills;
     Node[,] board;
 
     List<NodePiece> update;
     List<FlippedPieces> flipped;
+    List<NodePiece> dead;
+    List<KilledPiece> killed;
 
     System.Random random;
 
@@ -42,6 +47,9 @@ public class Match3 : MonoBehaviour
             FlippedPieces flip = GetFlipped(piece);
             NodePiece flippedPiece = null;
 
+            int x = (int)piece.index.x;
+            fills[x] = Mathf.Clamp(fills[x] - 1, 0, width);
+
             List<Point> connected = IsConnected(piece.index, true);
             bool wasFlipped = (flip != null);
 
@@ -63,17 +71,83 @@ public class Match3 : MonoBehaviour
             {
                 foreach(Point pnt in connected) // Remove the node pieces connected
                 {
+                    KillPiece(pnt);
                     Node node = GetNodeAtPoint(pnt);
                     NodePiece nodePiece = node.getPiece();
                     if (nodePiece != null)
                     {
                         nodePiece.gameObject.SetActive(false);
+                        dead.Add(nodePiece);
                     }
                     node.SetPiece(null);
                 }
+
+                ApplyGravityToBoard();
             }
             flipped.Remove(flip); // Remove the flip after update
             update.Remove(piece);   
+        }
+    }
+
+    void ApplyGravityToBoard()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = (height-1); y >= 0; y--)
+            {
+                Point p = new Point(x, y);
+                Node node = GetNodeAtPoint(p);
+                int val = GetValueAtPoint(p);
+                if (val != 0) continue; // If it is not a hole, do nothing
+                for (int ny = (y-1); ny >= -1; ny--)
+                {
+                    Point next = new Point(x, ny);
+                    int nextVal = GetValueAtPoint(next);
+                    if (nextVal == 0)
+                        continue;
+                    if (nextVal != -1) // If we did not hit an end, but its not 0 then use this to fill the current hole
+                    {
+                        Node got = GetNodeAtPoint(next);
+                        NodePiece piece = got.getPiece();
+
+                        // Set the hole
+                        node.SetPiece(piece);
+                        update.Add(piece);
+
+                        // Replace the hole
+                        got.SetPiece(null);
+                    }
+                    else // Use dead ones or create new pieces to fill holes (hit a -1) only if we choose to
+                    {
+                        int newVal = FillPiece();
+                        NodePiece piece;
+                        Point fallPnt = new Point(x, (-1 - fills[x]));
+                        if (dead.Count > 0)
+                        {
+                            NodePiece revived = dead[0];
+                            revived.gameObject.SetActive(true);
+                            piece = revived;
+                            
+                            dead.RemoveAt(0);
+                        }
+                        else
+                        {
+                            GameObject obj = Instantiate(nodePiece, gameBoard);
+                            NodePiece n = obj.GetComponent<NodePiece>();
+                            piece = n;
+                        }
+
+                        piece.Initialize(newVal, p, pieces[newVal - 1]);
+                        piece.rect.anchoredPosition = GetPositionFromPoint(fallPnt);
+
+                        Node hole = GetNodeAtPoint(p);
+                        hole.SetPiece(piece);
+                        ResetPiece(piece);
+                        fills[x]++;
+                    }
+                    break;
+                }
+            }
         }
     }
 
@@ -93,10 +167,13 @@ public class Match3 : MonoBehaviour
 
     void StartGame()
     {
+        fills = new int[width];
         string seed = GetRandomSeed();
         random = new System.Random(seed.GetHashCode());
         update = new List<NodePiece>();
         flipped = new List<FlippedPieces>();
+        dead = new List<NodePiece>();
+        killed = new List<KilledPiece>();
 
         InitializeBoard();
         VerifyBoard();
@@ -190,6 +267,34 @@ public class Match3 : MonoBehaviour
         }
     }
 
+    void KillPiece(Point p)
+    {
+        List<KilledPiece> available = new List<KilledPiece>();
+        for (int i = 0; i < killed.Count; i++)
+        {
+            if (!killed[i].falling) available.Add(killed[i]);
+        }
+
+        KilledPiece set = null;
+        if (available.Count > 0)
+        {
+            set = available[0];
+        }
+        else
+        {
+            GameObject kill = Instantiate(killedPiece, killedBoard);
+            KilledPiece kPiece = kill.GetComponent<KilledPiece>();
+            set = kPiece;
+            killed.Add(kPiece);
+        }
+
+        int val = GetValueAtPoint(p) - 1;
+        if (set != null && val >= 0 && val < pieces.Length)
+        {
+            set.Initialize(pieces[val], GetPositionFromPoint(p));
+        }
+    }
+
     List<Point> IsConnected(Point p, bool main)
     {
         List<Point> connected = new List<Point>();
@@ -250,11 +355,6 @@ public class Match3 : MonoBehaviour
             {
                 AddPoints(ref connected, IsConnected(connected[i], false));
             }
-        }
-
-        if (connected.Count > 0)
-        {
-            connected.Add(p);
         }
 
         return connected;
