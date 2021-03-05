@@ -19,6 +19,7 @@ public class Match3 : MonoBehaviour
     int height = 8;
     int[] fills;
     Node[,] board;
+    public int comboCount = 0;
 
     List<NodePiece> update;
     List<FlippedPieces> flipped;
@@ -41,6 +42,7 @@ public class Match3 : MonoBehaviour
             if (!piece.UpdatePiece())
                 finishedUpdating.Add(piece);
         }
+
         for (int i = 0; i < finishedUpdating.Count; i++)
         {
             NodePiece piece = finishedUpdating[i];
@@ -66,12 +68,13 @@ public class Match3 : MonoBehaviour
                 {
                     FlipPieces(piece.index, flippedPiece.index, false); // Flip back
                 }
+                
             }
             else // If we made a match
             {
                 foreach(Point pnt in connected) // Remove the node pieces connected
                 {
-                    KillPiece(pnt);
+                    //KillPiece(pnt);
                     Node node = GetNodeAtPoint(pnt);
                     NodePiece nodePiece = node.getPiece();
                     if (nodePiece != null)
@@ -82,15 +85,24 @@ public class Match3 : MonoBehaviour
                     node.SetPiece(null);
                 }
 
-                ApplyGravityToBoard();
+                Invoke("ApplyGravityToBoard", 0.3f);
+                //ApplyGravityToBoard();
             }
             flipped.Remove(flip); // Remove the flip after update
             update.Remove(piece);   
         }
+        //if (comboCount > 0 && GameManager.S.phase == eGamePhase.waiting && comboCount == GameManager.S.comboCount)
+        //{
+        //    comboCount = 0;
+        //    GameManager.S.FinishCombo();
+        //}
     }
+
+   
 
     void ApplyGravityToBoard()
     {
+        bool wasHole = false;
         for (int x = 0; x < width; x++)
         {
             for (int y = (height-1); y >= 0; y--)
@@ -99,6 +111,7 @@ public class Match3 : MonoBehaviour
                 Node node = GetNodeAtPoint(p);
                 int val = GetValueAtPoint(p);
                 if (val != 0) continue; // If it is not a hole, do nothing
+                wasHole = true;
                 for (int ny = (y-1); ny >= -1; ny--)
                 {
                     Point next = new Point(x, ny);
@@ -148,6 +161,22 @@ public class Match3 : MonoBehaviour
                     break;
                 }
             }
+        }
+        if (wasHole)
+        {
+            //GameManager.S.FinishMatch();
+            comboCount++;
+            Invoke("ComboCheck", 1f);
+        }
+    }
+
+    void ComboCheck()
+    {
+        GameManager.S.FinishMatch();
+        if (GameManager.S.comboCount == comboCount)
+        {
+            GameManager.S.FinishCombo();
+            comboCount = 0;
         }
     }
 

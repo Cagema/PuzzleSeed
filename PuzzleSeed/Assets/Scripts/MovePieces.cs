@@ -65,11 +65,14 @@ public class MovePieces : MonoBehaviour
     {
         if (moving == null) return;
 
-        Debug.Log("Dropped");
         if (!newIndex.Equals(moving.index))
             game.FlipPieces(moving.index, newIndex, true);
         else
+        {
             game.ResetPiece(moving);
+            GameManager.S.ResetTurn();
+        }
+            
         moving = null;
     }
 }

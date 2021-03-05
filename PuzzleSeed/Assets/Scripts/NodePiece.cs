@@ -73,7 +73,7 @@ public class NodePiece : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (updating) return;
+        if (updating || GameManager.S.phase == eGamePhase.waiting) return;
         MovePieces.instance.MovePiece(this);
        // Debug.Log("Grab " + transform.name);
     }
@@ -81,7 +81,9 @@ public class NodePiece : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void OnPointerUp(PointerEventData eventData)
     {
         // Debug.Log("Let go of " + transform.name);
+        GameManager.S.FinishTurn();
         MovePieces.instance.DropPiece();
+        
     }
 
     
