@@ -69,8 +69,8 @@ public class MovePieces : MonoBehaviour
             game.FlipPieces(moving.index, newIndex, true);
         else
         {
-            game.ResetPiece(moving);
             GameManager.S.ResetTurn();
+            game.ResetPiece(moving);
         }
             
         moving = null;

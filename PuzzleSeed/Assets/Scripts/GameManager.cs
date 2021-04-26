@@ -74,6 +74,7 @@ public class GameManager : MonoBehaviour
             else
                 phase = eGamePhase.playerTwoTurn;
         }
+        Debug.Log("reset turn: " + phase.ToString());
     }
 
     public void FinishMatch()

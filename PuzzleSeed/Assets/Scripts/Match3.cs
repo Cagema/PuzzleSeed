@@ -67,8 +67,8 @@ public class Match3 : MonoBehaviour
                 if (wasFlipped)
                 {
                     FlipPieces(piece.index, flippedPiece.index, false); // Flip back
+                    GameManager.S.FinishCombo();
                 }
-                
             }
             else // If we made a match
             {
@@ -164,7 +164,6 @@ public class Match3 : MonoBehaviour
         }
         if (wasHole)
         {
-            //GameManager.S.FinishMatch();
             comboCount++;
             Invoke("ComboCheck", 1f);
         }
@@ -288,7 +287,6 @@ public class Match3 : MonoBehaviour
 
             update.Add(pieceOne);
             update.Add(pieceTwo);
-
         }
         else
         {
