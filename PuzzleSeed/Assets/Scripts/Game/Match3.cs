@@ -1,19 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class Match3 : MonoBehaviour
+public class Match3 : MonoBehaviourPunCallbacks
 {
     public ArrayLayout BoardLayout;
 
     [Header("UI Elements")]
     public Sprite[] pieces;
     public RectTransform gameBoard;
-    public RectTransform killedBoard;
 
     [Header("Prefabs")]
     public GameObject nodePiece;
-    public GameObject killedPiece;
 
     int width = 8;
     int height = 8;
@@ -24,7 +23,6 @@ public class Match3 : MonoBehaviour
     List<NodePiece> update;
     List<FlippedPieces> flipped;
     List<NodePiece> dead;
-    List<KilledPiece> killed;
 
     System.Random random;
 
@@ -91,11 +89,6 @@ public class Match3 : MonoBehaviour
             flipped.Remove(flip); // Remove the flip after update
             update.Remove(piece);   
         }
-        //if (comboCount > 0 && GameManager.S.phase == eGamePhase.waiting && comboCount == GameManager.S.comboCount)
-        //{
-        //    comboCount = 0;
-        //    GameManager.S.FinishCombo();
-        //}
     }
 
    
@@ -201,11 +194,16 @@ public class Match3 : MonoBehaviour
         update = new List<NodePiece>();
         flipped = new List<FlippedPieces>();
         dead = new List<NodePiece>();
-        killed = new List<KilledPiece>();
 
-        InitializeBoard();
-        VerifyBoard();
-        InstatiateBoard();
+        if (PhotonNetwork.IsMasterClient)
+        {
+            InitializeBoard();
+            VerifyBoard();
+            InstatiateBoard();
+        }
+        //InitializeBoard();
+        //VerifyBoard();
+        //InstatiateBoard();
     }
 
     void InitializeBoard()
@@ -252,7 +250,9 @@ public class Match3 : MonoBehaviour
 
                 int val = node.value;
                 if (val <= 0) continue;
-                GameObject p = Instantiate(nodePiece, gameBoard);
+                //GameObject p = Instantiate(nodePiece, gameBoard);
+                GameObject p = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity);
+                p.transform.SetParent(gameBoard, false);
                 NodePiece piece = p.GetComponent<NodePiece>();
                 RectTransform rect = p.GetComponent<RectTransform>();
                 rect.anchoredPosition = new Vector2(32 + (64 * x), -32 - (64 * y));
@@ -294,33 +294,33 @@ public class Match3 : MonoBehaviour
         }
     }
 
-    void KillPiece(Point p)
-    {
-        List<KilledPiece> available = new List<KilledPiece>();
-        for (int i = 0; i < killed.Count; i++)
-        {
-            if (!killed[i].falling) available.Add(killed[i]);
-        }
+    //void KillPiece(Point p)
+    //{
+    //    List<KilledPiece> available = new List<KilledPiece>();
+    //    for (int i = 0; i < killed.Count; i++)
+    //    {
+    //        if (!killed[i].falling) available.Add(killed[i]);
+    //    }
 
-        KilledPiece set = null;
-        if (available.Count > 0)
-        {
-            set = available[0];
-        }
-        else
-        {
-            GameObject kill = Instantiate(killedPiece, killedBoard);
-            KilledPiece kPiece = kill.GetComponent<KilledPiece>();
-            set = kPiece;
-            killed.Add(kPiece);
-        }
+    //    KilledPiece set = null;
+    //    if (available.Count > 0)
+    //    {
+    //        set = available[0];
+    //    }
+    //    else
+    //    {
+    //        GameObject kill = Instantiate(killedPiece, killedBoard);
+    //        KilledPiece kPiece = kill.GetComponent<KilledPiece>();
+    //        set = kPiece;
+    //        killed.Add(kPiece);
+    //    }
 
-        int val = GetValueAtPoint(p) - 1;
-        if (set != null && val >= 0 && val < pieces.Length)
-        {
-            set.Initialize(pieces[val], GetPositionFromPoint(p));
-        }
-    }
+    //    int val = GetValueAtPoint(p) - 1;
+    //    if (set != null && val >= 0 && val < pieces.Length)
+    //    {
+    //        set.Initialize(pieces[val], GetPositionFromPoint(p));
+    //    }
+    //}
 
     List<Point> IsConnected(Point p, bool main)
     {
