@@ -138,7 +138,8 @@ public class Match3 : MonoBehaviourPunCallbacks
                         }
                         else
                         {
-                            GameObject obj = Instantiate(nodePiece, gameBoard);
+                            GameObject obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity);
+                            obj.transform.SetParent(gameBoard, false);
                             NodePiece n = obj.GetComponent<NodePiece>();
                             piece = n;
                         }
@@ -201,9 +202,6 @@ public class Match3 : MonoBehaviourPunCallbacks
             VerifyBoard();
             InstatiateBoard();
         }
-        //InitializeBoard();
-        //VerifyBoard();
-        //InstatiateBoard();
     }
 
     void InitializeBoard()

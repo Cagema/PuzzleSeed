@@ -61,12 +61,6 @@ public class OnlineManager : MonoBehaviourPunCallbacks
         Debug.LogFormat("OnPlayerLeftRoom() {0}", otherPlayer.NickName); // seen when other disconnects
 
 
-        if (PhotonNetwork.IsMasterClient)
-        {
-            Debug.LogFormat("OnPlayerLeftRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient); // called before OnPlayerLeftRoom
-
-
-            LoadArena();
-        }
+        LeaveRoom();
     }
 }

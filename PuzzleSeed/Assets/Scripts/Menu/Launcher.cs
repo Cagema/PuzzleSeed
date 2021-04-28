@@ -12,7 +12,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     string gameVersion = "1";
 
-    bool isConnecting;
+    bool isConnecting = false;
 
     [Tooltip("The Ui Panel to let the user enter name, connect and play")]
     [SerializeField]
@@ -76,7 +76,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log("PUN Basics Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
         {
             Debug.Log("We load the 'GameScene' ");
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public enum eGamePhase
 {
@@ -10,13 +11,13 @@ public enum eGamePhase
     gameOver
 }
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviourPun
 {
     static public GameManager S;
     public static Player CURRENT_PLAYER;
     Player lastPlayer;
 
-    public Match3 match;
+    public GameObject match;
 
     [Header("Set Dynamically")]
     public List<Player> players;
@@ -30,8 +31,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        match = GetComponent<Match3>();
-
         InitializePlayers();
     }
 
