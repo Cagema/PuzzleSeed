@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7267159592271917719}
   - component: {fileID: 1877867582613471893}
   - component: {fileID: 8959771888652436542}
-  - component: {fileID: 8424375239262229350}
+  - component: {fileID: -3366022907979584042}
   m_Layer: 5
   m_Name: NodePiece
   m_TagString: Untagged
@@ -115,11 +115,11 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 0
   ObservedComponents:
-  - {fileID: 8424375239262229350}
+  - {fileID: -3366022907979584042}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &8424375239262229350
+--- !u!114 &-3366022907979584042
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

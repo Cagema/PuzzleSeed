@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Photon.Pun;
 
-public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandler
+public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandler, IPunObservable, IPunInstantiateMagicCallback
 {
     public int value;
     public Point index;
@@ -25,6 +25,11 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
 
         value = v;
         SetIndex(p);
+        img.sprite = piece;
+    }
+
+    public void SetImage(Sprite piece)
+    {
         img.sprite = piece;
     }
 
@@ -86,21 +91,31 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
         
     }
 
-    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.IsWriting)
-        {
-            //We own this player: send the others our data
-            stream.SendNext(value);
-            stream.SendNext(index);
-            stream.SendNext(pos);
-        }
-        else
-        {
-            //Network player, receive data
-            value = (int)stream.ReceiveNext();
-            index = (Point)stream.ReceiveNext();
-            pos = (Vector2)stream.ReceiveNext();
-        }
+        throw new System.NotImplementedException();
+        //if (stream.IsWriting)
+        //{
+        //    //We own this player: send the others our data
+        //    stream.SendNext(this.value);
+        //    stream.SendNext(this.index.x);
+        //    stream.SendNext(this.index.y);
+        //}
+        //else
+        //{
+        //    //Network player, receive data
+        //    this.value = (int)stream.ReceiveNext();
+        //    this.index.x = (int)stream.ReceiveNext();
+        //    this.index.y = (int)stream.ReceiveNext();
+        //}
+    }
+
+    public void OnPhotonInstantiate(PhotonMessageInfo info)
+    {
+        object[] instantiationData = info.photonView.InstantiationData;
+        this.transform.SetParent(GameObject.FindGameObjectWithTag((string)instantiationData[0]).GetComponent<RectTransform>(), false);
+        this.value = (int)instantiationData[1];
+        this.index.x = (int)instantiationData[2];
+        this.index.y = (int)instantiationData[3];
     }
 }

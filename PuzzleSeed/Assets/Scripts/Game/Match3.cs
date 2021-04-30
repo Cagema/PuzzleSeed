@@ -138,7 +138,7 @@ public class Match3 : MonoBehaviourPunCallbacks
                         }
                         else
                         {
-                            GameObject obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity);
+                            GameObject obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, val, x, y });
                             obj.transform.SetParent(gameBoard, false);
                             NodePiece n = obj.GetComponent<NodePiece>();
                             piece = n;
@@ -196,12 +196,27 @@ public class Match3 : MonoBehaviourPunCallbacks
         flipped = new List<FlippedPieces>();
         dead = new List<NodePiece>();
 
+        InitializeBoard();
         if (PhotonNetwork.IsMasterClient)
         {
-            InitializeBoard();
             VerifyBoard();
             InstatiateBoard();
         }
+        else
+        {
+            ActorInstatiateBoard();
+        }
+    }
+
+    private void ActorInstatiateBoard()
+    {
+        //for (int x = 0; x < width; x++)
+        //{
+        //    for (int y = 0; y < height; y++)
+        //    {
+                
+        //    }
+        //}
     }
 
     void InitializeBoard()
@@ -249,7 +264,7 @@ public class Match3 : MonoBehaviourPunCallbacks
                 int val = node.value;
                 if (val <= 0) continue;
                 //GameObject p = Instantiate(nodePiece, gameBoard);
-                GameObject p = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity);
+                GameObject p = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, val, x, y });
                 p.transform.SetParent(gameBoard, false);
                 NodePiece piece = p.GetComponent<NodePiece>();
                 RectTransform rect = p.GetComponent<RectTransform>();
@@ -259,6 +274,8 @@ public class Match3 : MonoBehaviourPunCallbacks
             }
         }
     }
+
+    
 
     public void ResetPiece(NodePiece piece)
     {
