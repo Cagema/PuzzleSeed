@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class Match3 : MonoBehaviourPunCallbacks
+public class Match3 : MonoBehaviourPun
 {
     public ArrayLayout BoardLayout;
 
@@ -72,18 +72,12 @@ public class Match3 : MonoBehaviourPunCallbacks
             {
                 foreach(Point pnt in connected) // Remove the node pieces connected
                 {
-                    //KillPiece(pnt);
-                    Node node = GetNodeAtPoint(pnt);
-                    NodePiece nodePiece = node.getPiece();
-                    if (nodePiece != null)
-                    {
-                        nodePiece.gameObject.SetActive(false);
-                        dead.Add(nodePiece);
-                    }
-                    node.SetPiece(null);
+                    this.photonView.RPC("RemoveConnectedNodePieces", RpcTarget.All, pnt.x, pnt.y);
+                    if(pnt == connected[connected.Count-1]) 
+                        this.photonView.RPC("CallApplyGravity", RpcTarget.Others);
                 }
 
-                Invoke("ApplyGravityToBoard", 0.3f);
+                CallApplyGravity();
                 //ApplyGravityToBoard();
             }
             flipped.Remove(flip); // Remove the flip after update
@@ -91,7 +85,25 @@ public class Match3 : MonoBehaviourPunCallbacks
         }
     }
 
-   
+    [PunRPC]
+    void RemoveConnectedNodePieces(int x, int y)
+    {
+        Point pnt = new Point(x, y);
+        Node node = GetNodeAtPoint(pnt);
+        NodePiece nodePiece = node.getPiece();
+        if (nodePiece != null)
+        {
+            nodePiece.gameObject.SetActive(false);
+            dead.Add(nodePiece);
+        }
+        node.SetPiece(null);
+    }
+
+    [PunRPC]
+    void CallApplyGravity()
+    {
+        Invoke("ApplyGravityToBoard", 0.3f);
+    }
 
     void ApplyGravityToBoard()
     {
@@ -133,17 +145,20 @@ public class Match3 : MonoBehaviourPunCallbacks
                             NodePiece revived = dead[0];
                             revived.gameObject.SetActive(true);
                             piece = revived;
-                            
+
                             dead.RemoveAt(0);
                         }
                         else
                         {
-                            GameObject obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, val, x, y });
-                            obj.transform.SetParent(gameBoard, false);
+                            GameObject obj = new GameObject();
+                            if (PhotonNetwork.IsMasterClient)
+                            {
+                                obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, newVal, x, y });
+                                obj.transform.SetParent(gameBoard, false);
+                            }
                             NodePiece n = obj.GetComponent<NodePiece>();
                             piece = n;
                         }
-
                         piece.Initialize(newVal, p, pieces[newVal - 1]);
                         piece.rect.anchoredPosition = GetPositionFromPoint(fallPnt);
 
@@ -151,6 +166,7 @@ public class Match3 : MonoBehaviourPunCallbacks
                         hole.SetPiece(piece);
                         ResetPiece(piece);
                         fills[x]++;
+                        
                     }
                     break;
                 }
@@ -204,19 +220,31 @@ public class Match3 : MonoBehaviourPunCallbacks
         }
         else
         {
-            ActorInstatiateBoard();
+            Invoke("ActorInstatiateBoard", 1f);
+            //ActorInstatiateBoard();
         }
     }
 
     private void ActorInstatiateBoard()
     {
-        //for (int x = 0; x < width; x++)
-        //{
-        //    for (int y = 0; y < height; y++)
-        //    {
-                
-        //    }
-        //}
+        GameObject[] nodePiecesGO = GameObject.FindGameObjectsWithTag("NodePiece");
+        if (nodePiecesGO.Length == 0)
+        {
+            Debug.Log("NodePieces even not instatiate");
+        }
+        foreach (var item in nodePiecesGO)
+        {
+            NodePiece piece = item.GetComponent<NodePiece>();
+            Node node = GetNodeAtPoint(new Point(piece.index.x, piece.index.y));
+            node.value = piece.value;
+            node.index.x = piece.index.x;
+            node.index.y = piece.index.y;
+            if (node.value <= 0) continue;
+            RectTransform rect = item.GetComponent<RectTransform>();
+            rect.anchoredPosition = new Vector2(32 + (64 * node.index.x), -32 - (64 * node.index.y));
+            piece.Initialize(node.value, node.index, pieces[node.value - 1]);
+            node.SetPiece(piece);
+        }
     }
 
     void InitializeBoard()
@@ -264,7 +292,7 @@ public class Match3 : MonoBehaviourPunCallbacks
                 int val = node.value;
                 if (val <= 0) continue;
                 //GameObject p = Instantiate(nodePiece, gameBoard);
-                GameObject p = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, val, x, y });
+                GameObject p = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, val, x, y});
                 p.transform.SetParent(gameBoard, false);
                 NodePiece piece = p.GetComponent<NodePiece>();
                 RectTransform rect = p.GetComponent<RectTransform>();
@@ -274,8 +302,6 @@ public class Match3 : MonoBehaviourPunCallbacks
             }
         }
     }
-
-    
 
     public void ResetPiece(NodePiece piece)
     {

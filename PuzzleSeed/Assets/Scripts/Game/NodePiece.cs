@@ -93,7 +93,6 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        throw new System.NotImplementedException();
         //if (stream.IsWriting)
         //{
         //    //We own this player: send the others our data
