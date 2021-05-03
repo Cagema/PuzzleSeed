@@ -80,14 +80,16 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
     public void OnPointerDown(PointerEventData eventData)
     {
         if (updating || GameManager.S.phase == eGamePhase.waiting) return;
-        MovePieces.instance.MovePiece(this);
+        //MovePieces.instance.MovePiece(this);
+        MovePieces.instance.photonView.RPC("MovePiece", RpcTarget.All, this.index.x, this.index.y);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         if (updating || GameManager.S.phase == eGamePhase.waiting) return;
-        
-        MovePieces.instance.DropPiece();
+
+        //MovePieces.instance.DropPiece();
+        MovePieces.instance.photonView.RPC("DropPiece", RpcTarget.All);
         
     }
 

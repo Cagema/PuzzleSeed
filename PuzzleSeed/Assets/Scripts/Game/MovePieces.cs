@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class MovePieces : MonoBehaviour
+public class MovePieces : MonoBehaviourPun
 {
     public static MovePieces instance;
     Match3 game;
@@ -54,13 +55,16 @@ public class MovePieces : MonoBehaviour
         }
     }
 
-    public void MovePiece(NodePiece piece)
+    [PunRPC]
+    public void MovePiece(int x, int y)
     {
+        NodePiece piece = game.GetNodeAtPoint(new Point(x, y)).getPiece();
         if (moving != null) return;
         moving = piece;
         mouseStart = Input.mousePosition;
     }
 
+    [PunRPC]
     public void DropPiece()
     {
         if (moving == null) return;
@@ -69,6 +73,7 @@ public class MovePieces : MonoBehaviour
         {
             GameManager.S.FinishTurn();
             game.FlipPieces(moving.index, newIndex, true);
+            //game.photonView.RPC("FlipPieces", Photon.Pun.RpcTarget.All, moving.index.x, moving.index.y, newIndex.x, newIndex.y, true);
         }
         else
         {

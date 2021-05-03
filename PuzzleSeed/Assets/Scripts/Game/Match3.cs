@@ -65,6 +65,7 @@ public class Match3 : MonoBehaviourPun
                 if (wasFlipped)
                 {
                     FlipPieces(piece.index, flippedPiece.index, false); // Flip back
+                    //this.photonView.RPC("FlipPieces", RpcTarget.All, piece.index.x, piece.index.y, flippedPiece.index.x, flippedPiece.index.y, false);
                     GameManager.S.FinishCombo();
                 }
             }
@@ -72,9 +73,10 @@ public class Match3 : MonoBehaviourPun
             {
                 foreach(Point pnt in connected) // Remove the node pieces connected
                 {
-                    this.photonView.RPC("RemoveConnectedNodePieces", RpcTarget.All, pnt.x, pnt.y);
-                    if(pnt == connected[connected.Count-1]) 
-                        this.photonView.RPC("CallApplyGravity", RpcTarget.Others);
+                    //this.photonView.RPC("RemoveConnectedNodePieces", RpcTarget.All, pnt.x, pnt.y);
+                    //if(pnt == connected[connected.Count-1]) 
+                    //    this.photonView.RPC("CallApplyGravity", RpcTarget.Others);
+                    RemoveConnectedNodePieces(pnt.x, pnt.y);
                 }
 
                 CallApplyGravity();
@@ -138,6 +140,10 @@ public class Match3 : MonoBehaviourPun
                     else // Use dead ones or create new pieces to fill holes (hit a -1) only if we choose to
                     {
                         int newVal = FillPiece();
+                        //if (PhotonNetwork.IsMasterClient)
+                        //{
+                        //    this.photonView.RPC("NewPiecesAfterGravity", RpcTarget.All, newVal, x, y);
+                        //}
                         NodePiece piece;
                         Point fallPnt = new Point(x, (-1 - fills[x]));
                         if (dead.Count > 0)
@@ -166,7 +172,7 @@ public class Match3 : MonoBehaviourPun
                         hole.SetPiece(piece);
                         ResetPiece(piece);
                         fills[x]++;
-                        
+
                     }
                     break;
                 }
@@ -177,6 +183,40 @@ public class Match3 : MonoBehaviourPun
             comboCount++;
             Invoke("ComboCheck", 1f);
         }
+    }
+
+    [PunRPC]
+    void NewPiecesAfterGravity(int newVal, int x, int y)
+    {
+        Point p = new Point(x, y);
+        NodePiece piece;
+        Point fallPnt = new Point(x, (-1 - fills[x]));
+        if (dead.Count > 0)
+        {
+            NodePiece revived = dead[0];
+            revived.gameObject.SetActive(true);
+            piece = revived;
+
+            dead.RemoveAt(0);
+        }
+        else
+        {
+            GameObject obj = new GameObject();
+            if (PhotonNetwork.IsMasterClient)
+            {
+                obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, newVal, x, y });
+                obj.transform.SetParent(gameBoard, false);
+            }
+            NodePiece n = obj.GetComponent<NodePiece>();
+            piece = n;
+        }
+        piece.Initialize(newVal, p, pieces[newVal - 1]);
+        piece.rect.anchoredPosition = GetPositionFromPoint(fallPnt);
+
+        Node hole = GetNodeAtPoint(p);
+        hole.SetPiece(piece);
+        ResetPiece(piece);
+        fills[x]++;
     }
 
     void ComboCheck()
@@ -309,8 +349,11 @@ public class Match3 : MonoBehaviourPun
         update.Add(piece);
     }
 
+    [PunRPC]
     public void FlipPieces(Point one, Point two, bool main)
     {
+        //Point one = new Point(oneX, oneY);
+        //Point two = new Point(twoX, twoY);
         if (GetValueAtPoint(one) < 0) return;
 
         Node nodeOne = GetNodeAtPoint(one);
@@ -464,7 +507,7 @@ public class Match3 : MonoBehaviourPun
         board[p.x, p.y].value = v;
     }
 
-    Node GetNodeAtPoint(Point p)
+    public Node GetNodeAtPoint(Point p)
     {
         return board[p.x, p.y];
     }
