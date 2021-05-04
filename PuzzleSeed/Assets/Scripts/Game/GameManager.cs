@@ -17,7 +17,11 @@ public class GameManager : MonoBehaviourPun
     public static Player CURRENT_PLAYER;
     Player lastPlayer;
 
-    public GameObject match;
+    [Tooltip("The Player's UI GameObject Prefab")]
+    [SerializeField]
+    public GameObject PlayerUiPrefab;
+
+    public Transform canvasTr;
 
     [Header("Set Dynamically")]
     public List<Player> players;
@@ -37,9 +41,30 @@ public class GameManager : MonoBehaviourPun
     void InitializePlayers()
     {
         players = new List<Player>() { 
-            new Player(1, 100), 
-            new Player(2, 100) };
+            new Player(1), 
+            new Player(2) };
         WhyFirst();
+
+        GameObject uiGO = Instantiate(PlayerUiPrefab, canvasTr);
+        RectTransform rect = uiGO.GetComponent<RectTransform>();
+        rect.anchoredPosition = new Vector2(-430, 200);
+        uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(1).NickName);
+        uiGO = Instantiate(PlayerUiPrefab, canvasTr);
+        rect = uiGO.GetComponent<RectTransform>();
+        rect.anchoredPosition = new Vector2(430, 200);
+        uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(2).NickName);
+
+        //if (PhotonNetwork.IsMasterClient)
+        //{
+        //    GameObject uiGO = PhotonNetwork.Instantiate(PlayerUiPrefab.name, new Vector2(-480, 200), Quaternion.identity, 0);
+        //    uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(1).NickName);
+        //}
+        //else
+        //{
+        //    GameObject uiGO = PhotonNetwork.Instantiate(PlayerUiPrefab.name, new Vector2(480, 200), Quaternion.identity, 0);
+        //    uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(2).NickName);
+        //}
+
     }
 
     void WhyFirst()

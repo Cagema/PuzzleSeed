@@ -14,15 +14,20 @@ public class Match3 : MonoBehaviourPun
     [Header("Prefabs")]
     public GameObject nodePiece;
 
+    public GameObject gameManager;
+
     int width = 8;
     int height = 8;
     int[] fills;
     Node[,] board;
+
+    [Header("Combo View")]
     public int comboCount = 0;
 
     List<NodePiece> update;
     List<FlippedPieces> flipped;
     List<NodePiece> dead;
+    List<int> newValueList;
 
     System.Random random;
 
@@ -31,7 +36,7 @@ public class Match3 : MonoBehaviourPun
         StartGame();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         List<NodePiece> finishedUpdating = new List<NodePiece>();
         for (int i = 0; i < update.Count; i++)
@@ -73,10 +78,18 @@ public class Match3 : MonoBehaviourPun
             {
                 foreach(Point pnt in connected) // Remove the node pieces connected
                 {
-                    //this.photonView.RPC("RemoveConnectedNodePieces", RpcTarget.All, pnt.x, pnt.y);
-                    //if(pnt == connected[connected.Count-1]) 
-                    //    this.photonView.RPC("CallApplyGravity", RpcTarget.Others);
-                    RemoveConnectedNodePieces(pnt.x, pnt.y);
+                    Node node = GetNodeAtPoint(pnt);
+                    NodePiece nodePiece = node.getPiece();
+                    if (nodePiece != null)
+                    {
+                        nodePiece.gameObject.SetActive(false);
+                        dead.Add(nodePiece);
+                        if (PhotonNetwork.IsMasterClient)
+                        {
+                            this.photonView.RPC("AddNewValueAtList", RpcTarget.All, FillPiece());
+                        }
+                    }
+                    node.SetPiece(null);
                 }
 
                 CallApplyGravity();
@@ -88,17 +101,9 @@ public class Match3 : MonoBehaviourPun
     }
 
     [PunRPC]
-    void RemoveConnectedNodePieces(int x, int y)
+    void AddNewValueAtList(int item)
     {
-        Point pnt = new Point(x, y);
-        Node node = GetNodeAtPoint(pnt);
-        NodePiece nodePiece = node.getPiece();
-        if (nodePiece != null)
-        {
-            nodePiece.gameObject.SetActive(false);
-            dead.Add(nodePiece);
-        }
-        node.SetPiece(null);
+        newValueList.Add(item);
     }
 
     [PunRPC]
@@ -139,11 +144,8 @@ public class Match3 : MonoBehaviourPun
                     }
                     else // Use dead ones or create new pieces to fill holes (hit a -1) only if we choose to
                     {
-                        int newVal = FillPiece();
-                        //if (PhotonNetwork.IsMasterClient)
-                        //{
-                        //    this.photonView.RPC("NewPiecesAfterGravity", RpcTarget.All, newVal, x, y);
-                        //}
+                        int newVal = newValueList[0];
+
                         NodePiece piece;
                         Point fallPnt = new Point(x, (-1 - fills[x]));
                         if (dead.Count > 0)
@@ -172,7 +174,7 @@ public class Match3 : MonoBehaviourPun
                         hole.SetPiece(piece);
                         ResetPiece(piece);
                         fills[x]++;
-
+                        newValueList.RemoveAt(0);
                     }
                     break;
                 }
@@ -188,35 +190,35 @@ public class Match3 : MonoBehaviourPun
     [PunRPC]
     void NewPiecesAfterGravity(int newVal, int x, int y)
     {
-        Point p = new Point(x, y);
-        NodePiece piece;
-        Point fallPnt = new Point(x, (-1 - fills[x]));
-        if (dead.Count > 0)
-        {
-            NodePiece revived = dead[0];
-            revived.gameObject.SetActive(true);
-            piece = revived;
+        //Point p = new Point(x, y);
+        //NodePiece piece;
+        //Point fallPnt = new Point(x, (-1 - fills[x]));
+        ////if (dead.Count > 0)
+        ////{
+        //NodePiece revived = dead[0];
+        //revived.gameObject.SetActive(true);
+        //piece = revived;
 
-            dead.RemoveAt(0);
-        }
-        else
-        {
-            GameObject obj = new GameObject();
-            if (PhotonNetwork.IsMasterClient)
-            {
-                obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, newVal, x, y });
-                obj.transform.SetParent(gameBoard, false);
-            }
-            NodePiece n = obj.GetComponent<NodePiece>();
-            piece = n;
-        }
-        piece.Initialize(newVal, p, pieces[newVal - 1]);
-        piece.rect.anchoredPosition = GetPositionFromPoint(fallPnt);
+        //dead.RemoveAt(0);
+        ////}
+        ////else
+        ////{
+        ////    GameObject obj = new GameObject();
+        ////    if (PhotonNetwork.IsMasterClient)
+        ////    {
+        ////        obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, newVal, x, y });
+        ////        obj.transform.SetParent(gameBoard, false);
+        ////    }
+        ////    NodePiece n = obj.GetComponent<NodePiece>();
+        ////    piece = n;
+        ////}
+        //piece.Initialize(newVal, p, pieces[newVal - 1]);
+        //piece.rect.anchoredPosition = GetPositionFromPoint(fallPnt);
 
-        Node hole = GetNodeAtPoint(p);
-        hole.SetPiece(piece);
-        ResetPiece(piece);
-        fills[x]++;
+        //Node hole = GetNodeAtPoint(p);
+        //hole.SetPiece(piece);
+        //ResetPiece(piece);
+        //fills[x]++;
     }
 
     void ComboCheck()
@@ -244,13 +246,14 @@ public class Match3 : MonoBehaviourPun
     }
 
     void StartGame()
-    {
+    {           
         fills = new int[width];
         string seed = GetRandomSeed();
         random = new System.Random(seed.GetHashCode());
         update = new List<NodePiece>();
         flipped = new List<FlippedPieces>();
         dead = new List<NodePiece>();
+        newValueList = new List<int>(); 
 
         InitializeBoard();
         if (PhotonNetwork.IsMasterClient)
@@ -349,7 +352,6 @@ public class Match3 : MonoBehaviourPun
         update.Add(piece);
     }
 
-    [PunRPC]
     public void FlipPieces(Point one, Point two, bool main)
     {
         //Point one = new Point(oneX, oneY);

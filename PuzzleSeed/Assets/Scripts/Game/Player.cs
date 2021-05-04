@@ -5,13 +5,12 @@ using UnityEngine;
 public class Player
 {
     public int playerNum;
-    public int hp;
+    public float hp;
     // List of spells
-    public int moveCount;
-    public Player(int number, int hPoints = 100, int count = 1)
+
+    public Player(int number, float hPoints = 1f)
     {
         playerNum = number;
         hp = hPoints;
-        moveCount = count;
     }
 }

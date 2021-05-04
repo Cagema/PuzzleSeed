@@ -26,6 +26,9 @@ public class MovePieces : MonoBehaviourPun
     {
         if (moving != null)
         {
+            if (mouseStart == Vector2.zero)
+                return;
+
             Vector2 dir = ((Vector2)Input.mousePosition - mouseStart);
             Vector2 nDir = dir.normalized;
             Vector2 aDir = new Vector2(Mathf.Abs(dir.x), Mathf.Abs(dir.y));
@@ -52,16 +55,31 @@ public class MovePieces : MonoBehaviourPun
                 pos += Point.mult(new Point(add.x, -add.y), 16).ToVector();
             }
             moving.MovePositionTo(pos);
+            this.photonView.RPC("SetNewIndex", RpcTarget.Others, newIndex.x, newIndex.y);
         }
     }
 
-    [PunRPC]
-    public void MovePiece(int x, int y)
+    public void MovePiece(NodePiece piece)
     {
-        NodePiece piece = game.GetNodeAtPoint(new Point(x, y)).getPiece();
         if (moving != null) return;
         moving = piece;
         mouseStart = Input.mousePosition;
+        this.photonView.RPC("SetMovingPiece", RpcTarget.Others, piece.index.x, piece.index.y);
+    }
+
+    [PunRPC]
+    void SetMovingPiece(int x, int y)
+    {
+        NodePiece piece = game.GetNodeAtPoint(new Point(x, y)).getPiece();
+        moving = piece;
+        newIndex = moving.index;
+        mouseStart = Vector2.zero;
+    }
+
+    [PunRPC]
+    void SetNewIndex(int x, int y)
+    {
+        newIndex = new Point(x, y);
     }
 
     [PunRPC]

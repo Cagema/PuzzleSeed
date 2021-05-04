@@ -10,7 +10,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     [SerializeField]
     private byte maxPlayersPerRoom = 2;
 
-    string gameVersion = "1";
+    string gameVersion = "1.2";
 
     bool isConnecting = false;
 
