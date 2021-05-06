@@ -18,4 +18,9 @@ public class PlayerUI : MonoBehaviour
         playerNameText.text = name;
     }
 
+    public void EditHealthSlider(float val)
+    {
+        playerHealthSlider.value -= val;
+    }
+
 }

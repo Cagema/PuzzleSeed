@@ -16,6 +16,7 @@ public class Match3 : MonoBehaviourPun
 
     public GameObject gameManager;
 
+    const int DAMAGE_VAL = 5;
     int width = 8;
     int height = 8;
     int[] fills;
@@ -82,6 +83,11 @@ public class Match3 : MonoBehaviourPun
                     NodePiece nodePiece = node.getPiece();
                     if (nodePiece != null)
                     {
+                        if (nodePiece.value == DAMAGE_VAL)
+                        {
+                            GameManager.S.Damage();
+                        }
+                            
                         nodePiece.gameObject.SetActive(false);
                         dead.Add(nodePiece);
                         if (PhotonNetwork.IsMasterClient)

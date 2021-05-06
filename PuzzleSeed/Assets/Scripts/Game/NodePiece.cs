@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Photon.Pun;
+using Photon.Realtime;
 
 public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandler, IPunObservable, IPunInstantiateMagicCallback
 {
@@ -57,6 +58,7 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
 
     public bool UpdatePiece()
     {
+        if (rect == null) return false;
         if (Vector3.Distance(rect.anchoredPosition, pos) > 1)
         {
             MovePositionTo(pos);
@@ -80,7 +82,8 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
     public void OnPointerDown(PointerEventData eventData)
     {
         if (updating || GameManager.S.phase == eGamePhase.waiting) return;
-        MovePieces.instance.MovePiece(this);
+        if (PhotonNetwork.CurrentRoom.GetPlayer(GameManager.CURRENT_PLAYER.playerNum).IsLocal)
+            MovePieces.instance.MovePiece(this);
         //MovePieces.instance.photonView.RPC("MovePiece", RpcTarget.All, this.index.x, this.index.y);
     }
 
@@ -89,7 +92,8 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
         if (updating || GameManager.S.phase == eGamePhase.waiting) return;
 
         //MovePieces.instance.DropPiece();
-        MovePieces.instance.photonView.RPC("DropPiece", RpcTarget.All);
+        if (PhotonNetwork.CurrentRoom.GetPlayer(GameManager.CURRENT_PLAYER.playerNum).IsLocal)
+            MovePieces.instance.photonView.RPC("DropPiece", RpcTarget.All);
         
     }
 

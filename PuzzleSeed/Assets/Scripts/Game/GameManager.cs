@@ -20,6 +20,12 @@ public class GameManager : MonoBehaviourPun
     [Tooltip("The Player's UI GameObject Prefab")]
     [SerializeField]
     public GameObject PlayerUiPrefab;
+    public GameObject ParticaleTurnPrefab;
+    GameObject ui1GO;
+    GameObject ui2GO;
+    RectTransform rect1;
+    RectTransform rect2;
+    List<PlayerUI> uiList;
 
     public Transform canvasTr;
 
@@ -40,46 +46,76 @@ public class GameManager : MonoBehaviourPun
 
     void InitializePlayers()
     {
-        players = new List<Player>() { 
+        players = new List<Player>() 
+        { 
             new Player(1), 
-            new Player(2) };
-        WhyFirst();
-
-        GameObject uiGO = Instantiate(PlayerUiPrefab, canvasTr);
-        RectTransform rect = uiGO.GetComponent<RectTransform>();
-        rect.anchoredPosition = new Vector2(-430, 200);
-        uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(1).NickName);
-        uiGO = Instantiate(PlayerUiPrefab, canvasTr);
-        rect = uiGO.GetComponent<RectTransform>();
-        rect.anchoredPosition = new Vector2(430, 200);
-        uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(2).NickName);
-
-        //if (PhotonNetwork.IsMasterClient)
-        //{
-        //    GameObject uiGO = PhotonNetwork.Instantiate(PlayerUiPrefab.name, new Vector2(-480, 200), Quaternion.identity, 0);
-        //    uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(1).NickName);
-        //}
-        //else
-        //{
-        //    GameObject uiGO = PhotonNetwork.Instantiate(PlayerUiPrefab.name, new Vector2(480, 200), Quaternion.identity, 0);
-        //    uiGO.GetComponent<PlayerUI>().SetName(PhotonNetwork.CurrentRoom.GetPlayer(2).NickName);
-        //}
-
+            new Player(2) 
+        };
+        uiList = new List<PlayerUI>()
+        {
+            new PlayerUI(),
+            new PlayerUI()
+        };
+        
+        InitializeUI();
+        if (PhotonNetwork.IsMasterClient)
+            WhyFirst();
     }
 
     void WhyFirst()
     {
         int randomNum = Random.Range(0, 100) / 50;
-        CURRENT_PLAYER = players[randomNum];
+        this.photonView.RPC("SetFirstTurn", RpcTarget.All, randomNum);
+        
+    }
+
+    [PunRPC]
+    void SetFirstTurn(int playerNum)
+    {
+        CURRENT_PLAYER = players[playerNum];
         ChangePhase();
+    }
+
+    void InitializeUI()
+    {
+        ui1GO = Instantiate(PlayerUiPrefab, canvasTr);
+        rect1 = ui1GO.GetComponent<RectTransform>();
+        uiList[0] = ui1GO.GetComponent<PlayerUI>();
+        uiList[0].SetName(PhotonNetwork.CurrentRoom.GetPlayer(1).NickName);
+        
+        ui2GO = Instantiate(PlayerUiPrefab, canvasTr);
+        rect2 = ui2GO.GetComponent<RectTransform>();
+        uiList[1] = ui2GO.GetComponent<PlayerUI>();
+        uiList[1].SetName(PhotonNetwork.CurrentRoom.GetPlayer(2).NickName);
+
+        if (PhotonNetwork.CurrentRoom.GetPlayer(1).IsLocal)
+            rect1.anchoredPosition = new Vector2(-430, 200);
+        else
+            rect1.anchoredPosition = new Vector2(430, 200);
+        if (PhotonNetwork.CurrentRoom.GetPlayer(2).IsLocal)
+            rect2.anchoredPosition = new Vector2(-430, 200);
+        else
+            rect2.anchoredPosition = new Vector2(430, 200);
     }
 
     void ChangePhase()
     {
         if (CURRENT_PLAYER.playerNum == 1)
+        {
             phase = eGamePhase.playerOneTurn;
+            if (rect1.anchoredPosition == new Vector2(-430, 200))
+                Instantiate(ParticaleTurnPrefab, new Vector2(-7f, 0f), Quaternion.identity);
+            else
+                Instantiate(ParticaleTurnPrefab, new Vector2(7f, 0f), Quaternion.identity);
+        }
         else
+        {
             phase = eGamePhase.playerTwoTurn;
+            if (rect2.anchoredPosition == new Vector2(-430, 200))
+                Instantiate(ParticaleTurnPrefab, new Vector2(-7f, 0f), Quaternion.identity);
+            else
+                Instantiate(ParticaleTurnPrefab, new Vector2(7f, 0f), Quaternion.identity);
+        }
     }
 
     public void FinishTurn()
@@ -99,6 +135,45 @@ public class GameManager : MonoBehaviourPun
                 phase = eGamePhase.playerTwoTurn;
         }
         Debug.Log("reset turn: " + phase.ToString());
+    }
+
+    internal void Damage()
+    {
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+        
+        if (CURRENT_PLAYER == players[0])
+        {
+            this.photonView.RPC("ToDamage", RpcTarget.All, 1, 1f);
+        }
+        else
+        {
+            this.photonView.RPC("ToDamage", RpcTarget.All, 0, 1f);
+        }
+        CheckGameOver();
+            
+    }
+
+    [PunRPC]
+    void ToDamage(int id, float damage)
+    {
+        players[id].GetDamage(damage);
+        uiList[id].EditHealthSlider(damage);
+    }
+
+    public void CheckGameOver()
+    {
+        foreach (var p in players)
+            if (!p.CheckHP())
+                this.photonView.RPC("GameOver", RpcTarget.All, p.name);
+    }
+
+    [PunRPC]
+    private void GameOver(string name)
+    {
+        Debug.Log("Player " + name + " lose!");
+        if (PhotonNetwork.IsMasterClient)
+            PhotonNetwork.LeaveRoom();
     }
 
     public void FinishMatch()
