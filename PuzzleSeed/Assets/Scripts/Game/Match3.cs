@@ -16,7 +16,7 @@ public class Match3 : MonoBehaviourPun
 
     public GameObject gameManager;
 
-    const int DAMAGE_VAL = 5;
+    const int DAMAGE_VAL = 6;
     int width = 8;
     int height = 8;
     int[] fills;
@@ -500,7 +500,8 @@ public class Match3 : MonoBehaviourPun
     private int FillPiece()
     {
         int val = 1;
-        val = (random.Next(0, 100) / (100 / pieces.Length)) + 1;
+        //val = (random.Next(0, 100) / (100 / pieces.Length)) + 1;
+        val = random.Next(1, pieces.Length + 1);
         return val;
     }
 
@@ -555,7 +556,7 @@ public class Match3 : MonoBehaviourPun
     [System.Serializable]
     public class Node
     {
-        public int value; // 0 = blank, 1 = cube, 2 = sphere, 3 = cyllinder, 4 = pyramid, 5 = octahedron, -1 = hole
+        public int value; // 0 = blank, 1 = cube, 2 = sphere, 3 = cyllinder, 4 = pyramid, 5 = octahedron, 6 = skull, -1 = hole
         public Point index;
         NodePiece piece;
 
