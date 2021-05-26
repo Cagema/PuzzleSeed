@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using Photon.Pun;
 using Photon.Realtime;
 
-public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandler, IPunObservable, IPunInstantiateMagicCallback
+public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandler, IPunInstantiateMagicCallback
 {
     public int value;
     public Point index;
@@ -29,11 +29,6 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
         img.sprite = piece;
     }
 
-    public void SetImage(Sprite piece)
-    {
-        img.sprite = piece;
-    }
-
     public void SetIndex(Point p)
     {
         index = p;
@@ -46,10 +41,10 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
         pos = new Vector2(32 + (64 * index.x), -32 - (64 * index.y));
     }
 
-    public void MovePosition(Vector2 move)
-    {
-        rect.anchoredPosition += move * Time.deltaTime * 16f;
-    }
+    //public void MovePosition(Vector2 move)
+    //{
+    //    rect.anchoredPosition += move * Time.deltaTime * 16f;
+    //}
 
     public void MovePositionTo(Vector2 move)
     {
@@ -95,24 +90,6 @@ public class NodePiece : MonoBehaviourPun, IPointerDownHandler, IPointerUpHandle
         if (PhotonNetwork.CurrentRoom.GetPlayer(GameManager.CURRENT_PLAYER.playerNum).IsLocal)
             MovePieces.instance.photonView.RPC("DropPiece", RpcTarget.All);
         
-    }
-
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        //if (stream.IsWriting)
-        //{
-        //    //We own this player: send the others our data
-        //    stream.SendNext(this.value);
-        //    stream.SendNext(this.index.x);
-        //    stream.SendNext(this.index.y);
-        //}
-        //else
-        //{
-        //    //Network player, receive data
-        //    this.value = (int)stream.ReceiveNext();
-        //    this.index.x = (int)stream.ReceiveNext();
-        //    this.index.y = (int)stream.ReceiveNext();
-        //}
     }
 
     public void OnPhotonInstantiate(PhotonMessageInfo info)
