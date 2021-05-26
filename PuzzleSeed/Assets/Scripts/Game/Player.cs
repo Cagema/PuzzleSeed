@@ -6,6 +6,11 @@ public class Player
 {
     public int playerNum { get; set; }
     float hp;
+    public int cybeMana { get; set; }
+    public int sphereMana { get; set; }
+    public int cylinderMana { get; set; }
+    public int pyramidMana { get; set; }
+    public int experience { get; set; }
     public string name { get; private set; }
     // List of spells
 
@@ -14,6 +19,11 @@ public class Player
         playerNum = number;
         hp = hPoints;
         name = "Player " + playerNum.ToString();
+        cybeMana = 0;
+        sphereMana = 0;
+        cylinderMana = 0;
+        pyramidMana = 0;
+        experience = 0;
     }
 
     public void GetDamage(float damage)

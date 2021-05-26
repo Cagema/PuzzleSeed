@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 
 public class PlayerUI : MonoBehaviour
 {
@@ -13,6 +14,17 @@ public class PlayerUI : MonoBehaviour
     [SerializeField]
     private Slider playerHealthSlider;
 
+    [SerializeField]
+    private Text cybeMana;
+    [SerializeField]
+    private Text sphereMana;
+    [SerializeField]
+    private Text cylinderMana;
+    [SerializeField]
+    private Text pyramidMana;
+    [SerializeField]
+    private Text experience;
+
     public void SetName(string name)
     {
         playerNameText.text = name;
@@ -23,4 +35,33 @@ public class PlayerUI : MonoBehaviour
         playerHealthSlider.value -= val;
     }
 
+    public void EditCybeMana(int val)
+    {
+        cybeMana.text = "Cybe mana: " + val.ToString();
+    }
+    public void EditSphereMana(int val)
+    {
+        sphereMana.text = "Sphere mana: " + val.ToString();
+    }
+    public void EditCylinderMana(int val)
+    {
+        cylinderMana.text = "Cylinder mana: " + val.ToString();
+    }
+    public void EditPyramidMana(int val)
+    {
+        pyramidMana.text = "Pyramid mana: " + val.ToString();
+    }
+    public void EditExp(int val)
+    {
+        experience.text = "Experience: " + val.ToString();
+    }
+
+    public void ClickOnSkill()
+    {
+
+        if (PhotonNetwork.CurrentRoom.GetPlayer(GameManager.CURRENT_PLAYER.playerNum).IsLocal)
+            GameManager.S.SkillShot();
+        else
+            Debug.Log("Not the local client");
+    }
 }

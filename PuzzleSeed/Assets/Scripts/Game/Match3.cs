@@ -16,7 +16,13 @@ public class Match3 : MonoBehaviourPun
 
     public GameObject gameManager;
 
+    const int CUBE_VAL = 1;
+    const int SPHERE_VAL = 2;
+    const int CYLINDER_VAL = 3;
+    const int PYRAMID_VAL = 4;
+    const int OCTAHEDRON_VAL = 5;
     const int DAMAGE_VAL = 6;
+
     int width = 8;
     int height = 8;
     int[] fills;
@@ -83,9 +89,26 @@ public class Match3 : MonoBehaviourPun
                     NodePiece nodePiece = node.getPiece();
                     if (nodePiece != null)
                     {
-                        if (nodePiece.value == DAMAGE_VAL)
+                        switch (nodePiece.value)
                         {
-                            GameManager.S.Damage();
+                            case DAMAGE_VAL:
+                                GameManager.S.Damage(1);
+                                break;
+                            case CUBE_VAL:
+                                GameManager.S.CybeManaAdd();
+                                break;
+                            case SPHERE_VAL:
+                                GameManager.S.SphereManaAdd();
+                                break;
+                            case CYLINDER_VAL:
+                                GameManager.S.CylinderManaAdd();
+                                break;
+                            case PYRAMID_VAL:
+                                GameManager.S.PyramidManaAdd();
+                                break;
+                            case OCTAHEDRON_VAL:
+                                GameManager.S.ExpAdd();
+                                break;
                         }
                             
                         nodePiece.gameObject.SetActive(false);
@@ -556,7 +579,7 @@ public class Match3 : MonoBehaviourPun
     [System.Serializable]
     public class Node
     {
-        public int value; // 0 = blank, 1 = cube, 2 = sphere, 3 = cyllinder, 4 = pyramid, 5 = octahedron, 6 = skull, -1 = hole
+        public int value; // 0 = blank, 1 = cube, 2 = sphere, 3 = cylinder, 4 = pyramid, 5 = octahedron, 6 = skull, -1 = hole
         public Point index;
         NodePiece piece;
 

@@ -118,6 +118,37 @@ public class GameManager : MonoBehaviourPun
         }
     }
 
+    internal void CylinderManaAdd()
+    {
+        CURRENT_PLAYER.cylinderMana += 1;
+        uiList[CURRENT_PLAYER.playerNum - 1].EditCylinderMana(CURRENT_PLAYER.cylinderMana);
+    }
+
+    internal void PyramidManaAdd()
+    {
+        CURRENT_PLAYER.pyramidMana += 1;
+        uiList[CURRENT_PLAYER.playerNum - 1].EditPyramidMana(CURRENT_PLAYER.pyramidMana);
+    }
+
+    internal void SphereManaAdd()
+    {
+        CURRENT_PLAYER.sphereMana += 1;
+        uiList[CURRENT_PLAYER.playerNum - 1].EditSphereMana(CURRENT_PLAYER.sphereMana);
+    }
+
+    internal void ExpAdd()
+    {
+        CURRENT_PLAYER.experience += 1;
+        uiList[CURRENT_PLAYER.playerNum - 1].EditExp(CURRENT_PLAYER.experience);
+    }
+
+    internal void CybeManaAdd()
+    {
+        CURRENT_PLAYER.cybeMana += 1;
+        uiList[CURRENT_PLAYER.playerNum - 1].EditCybeMana(CURRENT_PLAYER.cybeMana);
+    }
+
+
     public void FinishTurn()
     {
         if (phase == eGamePhase.playerOneTurn ||
@@ -137,18 +168,18 @@ public class GameManager : MonoBehaviourPun
         Debug.Log("reset turn: " + phase.ToString());
     }
 
-    internal void Damage()
+    internal void Damage(int damage)
     {
         if (!PhotonNetwork.IsMasterClient)
             return;
         
         if (CURRENT_PLAYER == players[0])
         {
-            this.photonView.RPC("ToDamage", RpcTarget.All, 1, 1f);
+            this.photonView.RPC("ToDamage", RpcTarget.All, 1, (float)damage);
         }
         else
         {
-            this.photonView.RPC("ToDamage", RpcTarget.All, 0, 1f);
+            this.photonView.RPC("ToDamage", RpcTarget.All, 0, (float)damage);
         }
         CheckGameOver();
             
@@ -172,8 +203,9 @@ public class GameManager : MonoBehaviourPun
     private void GameOver(string name)
     {
         Debug.Log("Player " + name + " lose!");
-        if (PhotonNetwork.IsMasterClient)
-            PhotonNetwork.LeaveRoom();
+        //if (PhotonNetwork.IsMasterClient)
+        //    PhotonNetwork.LeaveRoom();
+        phase = eGamePhase.gameOver;
     }
 
     public void FinishMatch()
@@ -194,4 +226,15 @@ public class GameManager : MonoBehaviourPun
         comboCount = 0;
     }
 
+    public void SkillShot()
+    {
+        if (CURRENT_PLAYER.cybeMana >= 5 && CURRENT_PLAYER.sphereMana >= 5 && CURRENT_PLAYER.cylinderMana >= 5 && CURRENT_PLAYER.pyramidMana >= 5)
+        {
+            Damage(20);
+        }
+        else
+        {
+            Debug.Log("not mana from " + CURRENT_PLAYER.name);
+        }
+    }
 }
