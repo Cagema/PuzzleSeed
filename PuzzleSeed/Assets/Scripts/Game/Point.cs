@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс Point.cs описывает индекс матрицы поля
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 

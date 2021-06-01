@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс PlayerUI.cs описывает интерфейс игрока
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -58,10 +59,6 @@ public class PlayerUI : MonoBehaviour
 
     public void ClickOnSkill()
     {
-
-        if (PhotonNetwork.CurrentRoom.GetPlayer(GameManager.CURRENT_PLAYER.playerNum).IsLocal)
-            GameManager.S.SkillShot();
-        else
-            Debug.Log("Not the local client");
+        GameManager.S.SkillShot();
     }
 }

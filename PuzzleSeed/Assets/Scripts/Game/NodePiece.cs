@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс NodePiece.cs описывает плитку на сцене
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;

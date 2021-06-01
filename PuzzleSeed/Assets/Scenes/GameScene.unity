@@ -191,8 +191,6 @@ MonoBehaviour:
   gameBoard: {fileID: 1349823039}
   nodePiece: {fileID: 7267159592271917717, guid: 1b9a458f8dbbf4146afdae501ae73b42,
     type: 3}
-  gameManager: {fileID: 897248062}
-  comboCount: 0
 --- !u!4 &352276160
 Transform:
   m_ObjectHideFlags: 0
@@ -355,10 +353,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46165b4f5f507844ba8879ec1444f141, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerUiPrefab: {fileID: 691518640304405471, guid: ec84f54e0ca484e4794b83d028c7dc81,
+  PlayerUiPrefab: {fileID: 2855578613201116031, guid: 7e79a91cbcd6dd347a7c506e2021e5ed,
     type: 3}
   ParticaleTurnPrefab: {fileID: 2826715292991646794, guid: 049a02a6ac629b34db3b04aeff39aa2f,
     type: 3}
+  uiList: []
   canvasTr: {fileID: 1603761542}
   phase: 0
   comboCount: 0

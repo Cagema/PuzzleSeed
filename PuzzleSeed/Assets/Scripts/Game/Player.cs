@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс Player.cs описывает игрока
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 

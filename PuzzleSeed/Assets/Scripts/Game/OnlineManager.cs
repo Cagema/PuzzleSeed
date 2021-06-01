@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс OnlineManager.cs отвечает за сетевое подключение игроков
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;

@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿// Класс GameManager.cs предназначен для слежения за состоянием игры и игроков
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.UI;
 
 public enum eGamePhase
 {
@@ -25,7 +27,7 @@ public class GameManager : MonoBehaviourPun
     GameObject ui2GO;
     RectTransform rect1;
     RectTransform rect2;
-    List<PlayerUI> uiList;
+    public List<PlayerUI> uiList;
 
     public Transform canvasTr;
 
@@ -74,6 +76,7 @@ public class GameManager : MonoBehaviourPun
     {
         CURRENT_PLAYER = players[playerNum];
         ChangePhase();
+        Instantiate(ParticaleTurnPrefab);
     }
 
     void InitializeUI()
@@ -89,13 +92,13 @@ public class GameManager : MonoBehaviourPun
         uiList[1].SetName(PhotonNetwork.CurrentRoom.GetPlayer(2).NickName);
 
         if (PhotonNetwork.CurrentRoom.GetPlayer(1).IsLocal)
-            rect1.anchoredPosition = new Vector2(-430, 200);
+            rect1.anchoredPosition = new Vector2(-450, 0);
         else
-            rect1.anchoredPosition = new Vector2(430, 200);
+            rect1.anchoredPosition = new Vector2(450, 0);
         if (PhotonNetwork.CurrentRoom.GetPlayer(2).IsLocal)
-            rect2.anchoredPosition = new Vector2(-430, 200);
+            rect2.anchoredPosition = new Vector2(-450, 0);
         else
-            rect2.anchoredPosition = new Vector2(430, 200);
+            rect2.anchoredPosition = new Vector2(450, 0);
     }
 
     void ChangePhase()
@@ -103,18 +106,18 @@ public class GameManager : MonoBehaviourPun
         if (CURRENT_PLAYER.playerNum == 1)
         {
             phase = eGamePhase.playerOneTurn;
-            if (rect1.anchoredPosition == new Vector2(-430, 200))
-                Instantiate(ParticaleTurnPrefab, new Vector2(-7f, 0f), Quaternion.identity);
-            else
-                Instantiate(ParticaleTurnPrefab, new Vector2(7f, 0f), Quaternion.identity);
+            //if (rect1.anchoredPosition == new Vector2(-430, 200))
+            //    Instantiate(ParticaleTurnPrefab, new Vector2(-7f, 0f), Quaternion.identity);
+            //else
+            //    Instantiate(ParticaleTurnPrefab, new Vector2(7f, 0f), Quaternion.identity);
         }
         else
         {
             phase = eGamePhase.playerTwoTurn;
-            if (rect2.anchoredPosition == new Vector2(-430, 200))
-                Instantiate(ParticaleTurnPrefab, new Vector2(-7f, 0f), Quaternion.identity);
-            else
-                Instantiate(ParticaleTurnPrefab, new Vector2(7f, 0f), Quaternion.identity);
+            //if (rect2.anchoredPosition == new Vector2(-430, 200))
+            //    Instantiate(ParticaleTurnPrefab, new Vector2(-7f, 0f), Quaternion.identity);
+            //else
+            //    Instantiate(ParticaleTurnPrefab, new Vector2(7f, 0f), Quaternion.identity);
         }
     }
 
@@ -228,13 +231,26 @@ public class GameManager : MonoBehaviourPun
 
     public void SkillShot()
     {
-        if (CURRENT_PLAYER.cybeMana >= 5 && CURRENT_PLAYER.sphereMana >= 5 && CURRENT_PLAYER.cylinderMana >= 5 && CURRENT_PLAYER.pyramidMana >= 5)
+        if (!(phase == eGamePhase.waiting))
         {
-            Damage(20);
+            if (CURRENT_PLAYER.cybeMana >= 5 && CURRENT_PLAYER.sphereMana >= 5 && CURRENT_PLAYER.cylinderMana >= 5 && CURRENT_PLAYER.pyramidMana >= 5)
+            {
+                Damage(20);
+                CURRENT_PLAYER.cybeMana -= 5;
+                uiList[CURRENT_PLAYER.playerNum - 1].EditCylinderMana(CURRENT_PLAYER.cybeMana);
+                CURRENT_PLAYER.sphereMana -= 5;
+                uiList[CURRENT_PLAYER.playerNum - 1].EditCylinderMana(CURRENT_PLAYER.sphereMana);
+                CURRENT_PLAYER.cylinderMana -= 5;
+                uiList[CURRENT_PLAYER.playerNum - 1].EditCylinderMana(CURRENT_PLAYER.cylinderMana);
+                CURRENT_PLAYER.pyramidMana -= 5;
+                uiList[CURRENT_PLAYER.playerNum - 1].EditCylinderMana(CURRENT_PLAYER.pyramidMana);
+                ChangePhase();
+            }
+            else
+            {
+                Debug.Log("not mana from " + CURRENT_PLAYER.name);
+            }
         }
-        else
-        {
-            Debug.Log("not mana from " + CURRENT_PLAYER.name);
-        }
+        
     }
 }

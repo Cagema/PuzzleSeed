@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс Match3.cs отвечает за основную логику игрового поля
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
@@ -14,7 +15,7 @@ public class Match3 : MonoBehaviourPun
     [Header("Prefabs")]
     public GameObject nodePiece;
 
-    public GameObject gameManager;
+    //public GameObject gameManager;
 
     const int CUBE_VAL = 1;
     const int SPHERE_VAL = 2;
@@ -29,7 +30,7 @@ public class Match3 : MonoBehaviourPun
     Node[,] board;
 
     [Header("Combo View")]
-    public int comboCount = 0;
+    int comboCount = 0;
 
     List<NodePiece> update;
     List<FlippedPieces> flipped;
@@ -216,40 +217,6 @@ public class Match3 : MonoBehaviourPun
         }
     }
 
-    [PunRPC]
-    void NewPiecesAfterGravity(int newVal, int x, int y)
-    {
-        //Point p = new Point(x, y);
-        //NodePiece piece;
-        //Point fallPnt = new Point(x, (-1 - fills[x]));
-        ////if (dead.Count > 0)
-        ////{
-        //NodePiece revived = dead[0];
-        //revived.gameObject.SetActive(true);
-        //piece = revived;
-
-        //dead.RemoveAt(0);
-        ////}
-        ////else
-        ////{
-        ////    GameObject obj = new GameObject();
-        ////    if (PhotonNetwork.IsMasterClient)
-        ////    {
-        ////        obj = PhotonNetwork.Instantiate(nodePiece.name, gameBoard.position, Quaternion.identity, 0, new object[] { gameBoard.tag, newVal, x, y });
-        ////        obj.transform.SetParent(gameBoard, false);
-        ////    }
-        ////    NodePiece n = obj.GetComponent<NodePiece>();
-        ////    piece = n;
-        ////}
-        //piece.Initialize(newVal, p, pieces[newVal - 1]);
-        //piece.rect.anchoredPosition = GetPositionFromPoint(fallPnt);
-
-        //Node hole = GetNodeAtPoint(p);
-        //hole.SetPiece(piece);
-        //ResetPiece(piece);
-        //fills[x]++;
-    }
-
     void ComboCheck()
     {
         GameManager.S.FinishMatch();
@@ -409,34 +376,6 @@ public class Match3 : MonoBehaviourPun
         }
     }
 
-    //void KillPiece(Point p)
-    //{
-    //    List<KilledPiece> available = new List<KilledPiece>();
-    //    for (int i = 0; i < killed.Count; i++)
-    //    {
-    //        if (!killed[i].falling) available.Add(killed[i]);
-    //    }
-
-    //    KilledPiece set = null;
-    //    if (available.Count > 0)
-    //    {
-    //        set = available[0];
-    //    }
-    //    else
-    //    {
-    //        GameObject kill = Instantiate(killedPiece, killedBoard);
-    //        KilledPiece kPiece = kill.GetComponent<KilledPiece>();
-    //        set = kPiece;
-    //        killed.Add(kPiece);
-    //    }
-
-    //    int val = GetValueAtPoint(p) - 1;
-    //    if (set != null && val >= 0 && val < pieces.Length)
-    //    {
-    //        set.Initialize(pieces[val], GetPositionFromPoint(p));
-    //    }
-    //}
-
     List<Point> IsConnected(Point p, bool main)
     {
         List<Point> connected = new List<Point>();
@@ -576,6 +515,7 @@ public class Match3 : MonoBehaviourPun
         return new Vector2(32 + (64 * p.x), -32 - (62 * p.y));
     }
 
+    // Класс Node.cs описывает ячейку игрового поля
     [System.Serializable]
     public class Node
     {
@@ -604,6 +544,7 @@ public class Match3 : MonoBehaviourPun
     }
 }
 
+// Класс FlippedPieces.cs описывает пару плиток, которые поменялись местами
 [System.Serializable]
 public class FlippedPieces
 {

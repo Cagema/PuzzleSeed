@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс Launcher.cs отвечает за матчмейкинг
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;

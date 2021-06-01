@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Класс MovePieces.cs отвечает за движение плиток
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
